@@ -3,6 +3,8 @@ package my.chamados.helpdesk.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Table(name = "chamados")
@@ -26,6 +28,10 @@ public class Chamado {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Prioridade prioridade;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Categoria categoria;
 
     private LocalDateTime dataCriacao;
     private LocalDateTime dataFechamento;
