@@ -10,68 +10,61 @@
 <div class="container mt-5">
     <h1 class="mb-4 text-center text-primary">🎫 Helpdesk Central</h1>
 
+    <!-- Abas de Navegação -->
     <ul class="nav nav-tabs mb-4" id="helpdeskTabs" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active fw-bold" id="fila-tab" data-bs-toggle="tab" data-bs-target="#fila" type="button" role="tab">🛠️ Fila de Chamados</button>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold" id="fila-tab" data-bs-toggle="tab" data-bs-target="#fila" type="button" role="tab">
+                Fila de Chamados <span class="badge bg-danger" th:text="${#lists.size(chamados)}"></span>
+            </button>
         </li>
-        <li class="nav-item">
-            <button class="nav-link fw-bold" id="novo-chamado-tab" data-bs-toggle="tab" data-bs-target="#novo-chamado" type="button" role="tab">➕ Abrir Chamado</button>
+        <!-- NOVA ABA: Em Andamento -->
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="andamento-tab" data-bs-toggle="tab" data-bs-target="#andamento" type="button" role="tab">
+                Em Andamento <span class="badge bg-warning text-dark" th:text="${#lists.size(chamadosEmAtendimento)}"></span>
+            </button>
         </li>
-        <li class="nav-item">
-            <button class="nav-link fw-bold" id="cadastro-tab" data-bs-toggle="tab" data-bs-target="#cadastro" type="button" role="tab">👤 Cadastrar Usuário</button>
+        <!-- NOVA ABA: Histórico -->
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="historico-tab" data-bs-toggle="tab" data-bs-target="#historico" type="button" role="tab">
+                Histórico (Resolvidos)
+            </button>
+        </li>
+        <li class="nav-item ms-auto" role="presentation">
+            <button class="nav-link" id="novo-chamado-tab" data-bs-toggle="tab" data-bs-target="#novo-chamado" type="button" role="tab">➕ Abrir Chamado</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="cadastro-tab" data-bs-toggle="tab" data-bs-target="#cadastro" type="button" role="tab">👤 Cadastrar Usuário</button>
         </li>
     </ul>
 
+    <!-- Conteúdo das Abas -->
     <div class="tab-content" id="helpdeskTabsContent">
 
+        <!-- Aba 1: Fila de Chamados ABERTOS -->
         <div class="tab-pane fade show active" id="fila" role="tabpanel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3>Chamados Aguardando Atendimento</h3>
-                <span class="badge bg-primary fs-6" th:text="${chamados.size()} + ' na fila'">0 na fila</span>
-            </div>
-
-            <div th:if="${#lists.isEmpty(chamados)}" class="alert alert-success text-center">
-                🎉 Excelente! Nenhum chamado na fila.
-            </div>
-
+            <div th:if="${#lists.isEmpty(chamados)}" class="alert alert-success text-center">🎉 Nenhum chamado na fila.</div>
             <div th:if="${!#lists.isEmpty(chamados)}" class="card shadow-sm">
                 <table class="table table-hover mb-0 align-middle">
                     <thead class="table-dark">
                     <tr>
-                        <th>ID</th>
-                        <th>Categoria</th>
-                        <th>Título</th>
-                        <th>Prioridade</th>
-                        <th>Cliente</th>
-                        <th>Técnico que vai Aceitar</th>
-                        <th class="text-center">Ação</th>
+                        <th>ID</th><th>Título</th><th>Prioridade</th><th>Cliente</th><th>Técnico que vai Aceitar</th><th class="text-center">Ação</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="chamado : ${chamados}">
-                        <td th:text="${chamado.id}" class="fw-bold">1</td>
-                        <td><span class="badge bg-secondary" th:text="${chamado.categoria}">IMPRESSORA</span></td>
-                        <td th:text="${chamado.titulo}">Título</td>
-                        <td>
-                                    <span th:classappend="${chamado.prioridade.name() == 'ALTA' ? 'bg-danger' : (chamado.prioridade.name() == 'MEDIA' ? 'bg-warning text-dark' : 'bg-info')}"
-                                          class="badge" th:text="${chamado.prioridade}">MEDIA</span>
-                        </td>
-                        <td th:text="${chamado.cliente.nome}">Cliente</td>
-
+                        <td th:text="${chamado.id}" class="fw-bold"></td>
+                        <td th:text="${chamado.titulo}"></td>
+                        <td><span class="badge" th:classappend="${chamado.prioridade.name() == 'ALTA' ? 'bg-danger' : (chamado.prioridade.name() == 'MEDIA' ? 'bg-warning text-dark' : 'bg-info')}" th:text="${chamado.prioridade}"></span></td>
+                        <td th:text="${chamado.cliente.nome}"></td>
                         <form th:action="@{/painel-fila/assumir}" method="post">
                             <input type="hidden" name="chamadoId" th:value="${chamado.id}"/>
                             <td>
                                 <select name="tecnicoId" class="form-select form-select-sm" required>
-                                    <option value="">Selecione um Técnico...</option>
+                                    <option value="">Selecione...</option>
                                     <option th:each="u : ${usuarios}" th:if="${u.perfil.name() == 'TECNICO'}" th:value="${u.id}" th:text="${u.nome}"></option>
                                 </select>
                             </td>
-                            <td class="text-center">
-                                <div class="d-flex gap-1 justify-content-center">
-                                    <a th:href="@{/painel-fila/chamado/{id}(id=${chamado.id})}" class="btn btn-sm btn-info text-white">Ver Detalhes</a>
-                                    <button type="submit" class="btn btn-sm btn-success">Aceitar</button>
-                                </div>
-                            </td>
+                            <td class="text-center"><button type="submit" class="btn btn-sm btn-success">⚡ Aceitar</button></td>
                         </form>
                     </tr>
                     </tbody>
@@ -79,8 +72,61 @@
             </div>
         </div>
 
+        <!-- NOVA ABA 2: Chamados EM ATENDIMENTO -->
+        <div class="tab-pane fade" id="andamento" role="tabpanel">
+            <div th:if="${#lists.isEmpty(chamadosEmAtendimento)}" class="alert alert-info text-center">Nenhum chamado em atendimento no momento.</div>
+            <div th:if="${!#lists.isEmpty(chamadosEmAtendimento)}" class="card shadow-sm">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>ID</th><th>Título</th><th>Prioridade</th><th>Cliente</th><th>Técnico Responsável</th><th class="text-center">Ação</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="chamado : ${chamadosEmAtendimento}">
+                        <td th:text="${chamado.id}" class="fw-bold"></td>
+                        <td th:text="${chamado.titulo}"></td>
+                        <td><span class="badge" th:classappend="${chamado.prioridade.name() == 'ALTA' ? 'bg-danger' : (chamado.prioridade.name() == 'MEDIA' ? 'bg-warning text-dark' : 'bg-info')}" th:text="${chamado.prioridade}"></span></td>
+                        <td th:text="${chamado.cliente.nome}"></td>
+                        <td th:text="${chamado.tecnico.nome}"></td>
+                        <td class="text-center">
+                            <a th:href="@{/painel-fila/chamado/{id}(id=${chamado.id})}" class="btn btn-sm btn-primary">Ver Detalhes</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- NOVA ABA 3: Chamados RESOLVIDOS -->
+        <div class="tab-pane fade" id="historico" role="tabpanel">
+            <div th:if="${#lists.isEmpty(chamadosResolvidos)}" class="alert alert-secondary text-center">Nenhum chamado foi resolvido ainda.</div>
+            <div th:if="${!#lists.isEmpty(chamadosResolvidos)}" class="card shadow-sm">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>ID</th><th>Título</th><th>Cliente</th><th>Técnico</th><th>Data de Fechamento</th><th class="text-center">Ação</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="chamado : ${chamadosResolvidos}">
+                        <td th:text="${chamado.id}" class="fw-bold"></td>
+                        <td th:text="${chamado.titulo}"></td>
+                        <td th:text="${chamado.cliente.nome}"></td>
+                        <td th:text="${chamado.tecnico.nome}"></td>
+                        <td th:text="${#temporals.format(chamado.dataFechamento, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td class="text-center">
+                            <a th:href="@{/painel-fila/chamado/{id}(id=${chamado.id})}" class="btn btn-sm btn-info text-white">Ver Histórico</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Aba de Abrir Chamado (sem alterações) -->
         <div class="tab-pane fade" id="novo-chamado" role="tabpanel">
-            <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+             <div class="card shadow-sm mx-auto" style="max-width: 600px;">
                 <div class="card-header bg-primary text-white"><h5 class="mb-0">Registrar Novo Chamado</h5></div>
                 <div class="card-body">
                     <form th:action="@{/painel-fila/novo-chamado}" method="post">
@@ -119,6 +165,7 @@
             </div>
         </div>
 
+        <!-- Aba de Cadastrar Usuário (sem alterações) -->
         <div class="tab-pane fade" id="cadastro" role="tabpanel">
             <div class="card shadow-sm mx-auto" style="max-width: 500px;">
                 <div class="card-header bg-dark text-white"><h5 class="mb-0">Cadastrar Novo Usuário no Sistema</h5></div>

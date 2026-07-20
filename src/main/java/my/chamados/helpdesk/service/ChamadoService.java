@@ -130,4 +130,14 @@ public class ChamadoService {
     public Chamado buscarPorId(Long id) {
         return chamadoRepository.findById(id).orElseThrow(() -> new RuntimeException("Chamado não encontrado."));
     }
+
+    // NOVO: Método para listar chamados em atendimento
+    public List<Chamado> listarChamadosEmAtendimento() {
+        return chamadoRepository.findByStatusOrderByDataCriacaoAsc(StatusChamado.EM_ATENDIMENTO);
+    }
+
+    // NOVO: Método para listar chamados resolvidos
+    public List<Chamado> listarChamadosResolvidos() {
+        return chamadoRepository.findByStatusOrderByDataFechamentoDesc(StatusChamado.RESOLVIDO);
+    }
 }

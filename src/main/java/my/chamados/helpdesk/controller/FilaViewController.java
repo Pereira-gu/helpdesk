@@ -29,11 +29,17 @@ public class FilaViewController {
     // Carrega a página principal com todos os dados necessários
     @GetMapping("/painel-fila")
     public String exibirFila(Model model) {
+        // Listas existentes
         model.addAttribute("chamados", chamadoService.listarFila());
-        model.addAttribute("usuarios", usuarioRepository.findAll()); // Lista usuários para vincular ao chamado
+        model.addAttribute("usuarios", usuarioRepository.findAll());
         model.addAttribute("categorias", Categoria.values());
         model.addAttribute("prioridades", Prioridade.values());
         model.addAttribute("perfis", Usuario.Perfil.values());
+
+        // NOVAS LISTAS: Adiciona os chamados em atendimento e resolvidos ao model
+        model.addAttribute("chamadosEmAtendimento", chamadoService.listarChamadosEmAtendimento());
+        model.addAttribute("chamadosResolvidos", chamadoService.listarChamadosResolvidos());
+
         return "fila";
     }
 
