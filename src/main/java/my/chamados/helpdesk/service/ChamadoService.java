@@ -13,6 +13,7 @@ import my.chamados.helpdesk.repository.HistoricoChamadoRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ChamadoService {
@@ -124,5 +125,9 @@ public class ChamadoService {
 
     public List<Chamado> listarFila() {
         return chamadoRepository.buscarFilaDeAtendimento();
+    }
+
+    public Chamado buscarPorId(Long id) {
+        return chamadoRepository.findById(id).orElseThrow(() -> new RuntimeException("Chamado não encontrado."));
     }
 }

@@ -67,7 +67,10 @@
                                 </select>
                             </td>
                             <td class="text-center">
-                                <button type="submit" class="btn btn-sm btn-success">⚡ Aceitar Chamado</button>
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <a th:href="@{/painel-fila/chamado/{id}(id=${chamado.id})}" class="btn btn-sm btn-info text-white">Ver Detalhes</a>
+                                    <button type="submit" class="btn btn-sm btn-success">Aceitar</button>
+                                </div>
                             </td>
                         </form>
                     </tr>
