@@ -80,13 +80,6 @@
                 <div class="card-body">
                     <form th:action="@{/painel-fila/chamado/{id}/comentar(id=${chamado.id})}" method="post">
                         <div class="mb-3">
-                            <label class="form-label">Quem está interagindo?</label>
-                            <select name="usuarioId" class="form-select" required>
-                                <option value="">Selecione o Usuário...</option>
-                                <option th:each="u : ${usuarios}" th:value="${u.id}" th:text="${u.nome} + ' (' + ${u.perfil} + ')'"></option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
                             <label class="form-label">Mensagem / Solução</label>
                             <textarea name="texto" class="form-control" rows="3" placeholder="Digite um comentário ou a solução técnica se for encerrar..." required></textarea>
                         </div>

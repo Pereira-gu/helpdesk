@@ -23,10 +23,11 @@ public class Usuario {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Perfil perfil; // CLIENTE ou TECNICO
+    private Perfil perfil; // CLIENTE, TECNICO ou ADMIN
 
     public enum Perfil {
         CLIENTE,
-        TECNICO
+        TECNICO,
+        ADMIN // Perfil adicionado
     }
 }
