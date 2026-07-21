@@ -12,6 +12,7 @@ import my.chamados.helpdesk.model.HistoricoChamado;
 import my.chamados.helpdesk.repository.HistoricoChamadoRepository;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -131,13 +132,20 @@ public class ChamadoService {
         return chamadoRepository.findById(id).orElseThrow(() -> new RuntimeException("Chamado não encontrado."));
     }
 
-    // NOVO: Método para listar chamados em atendimento
     public List<Chamado> listarChamadosEmAtendimento() {
         return chamadoRepository.findByStatusOrderByDataCriacaoAsc(StatusChamado.EM_ATENDIMENTO);
     }
 
-    // NOVO: Método para listar chamados resolvidos
     public List<Chamado> listarChamadosResolvidos() {
         return chamadoRepository.findByStatusOrderByDataFechamentoDesc(StatusChamado.RESOLVIDO);
+    }
+
+    // NOVOS MÉTODOS PARA CLIENTE
+    public List<Chamado> listarChamadosAtivosDoCliente(Long clienteId) {
+        return chamadoRepository.findByClienteIdAndStatusIn(clienteId, Arrays.asList(StatusChamado.ABERTO, StatusChamado.EM_ATENDIMENTO));
+    }
+
+    public List<Chamado> listarChamadosResolvidosDoCliente(Long clienteId) {
+        return chamadoRepository.findByClienteIdAndStatus(clienteId, StatusChamado.RESOLVIDO);
     }
 }

@@ -5,6 +5,8 @@ import my.chamados.helpdesk.model.StatusChamado;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -16,9 +18,13 @@ public interface ChamadoRepository extends JpaRepository<Chamado, Long> {
             "c.dataCriacao ASC")
     List<Chamado> buscarFilaDeAtendimento();
 
-    // NOVO: Busca chamados que estão sendo atendidos, ordenados pelo mais antigo
+    // Busca chamados que estão sendo atendidos, ordenados pelo mais antigo
     List<Chamado> findByStatusOrderByDataCriacaoAsc(StatusChamado status);
 
-    // NOVO: Busca chamados já resolvidos, ordenados pelo mais recente
+    // Busca chamados já resolvidos, ordenados pelo mais recente
     List<Chamado> findByStatusOrderByDataFechamentoDesc(StatusChamado status);
+
+    // NOVOS MÉTODOS PARA CLIENTE
+    List<Chamado> findByClienteIdAndStatusIn(Long clienteId, Collection<StatusChamado> statuses);
+    List<Chamado> findByClienteIdAndStatus(Long clienteId, StatusChamado status);
 }
