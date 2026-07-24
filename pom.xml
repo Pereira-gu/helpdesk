@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.0</version> <!-- ATUALIZADO PARA SPRING BOOT 3+ -->
+        <version>3.3.1</version> <!-- ATUALIZADO para versão estável e compatível com Java 21 -->
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>my.chamados</groupId>
@@ -55,6 +55,11 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
