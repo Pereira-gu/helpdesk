@@ -1,13 +1,15 @@
 package my.chamados.helpdesk.controller;
 
-import jakarta.servlet.http.HttpSession;
 import my.chamados.helpdesk.model.Categoria;
 import my.chamados.helpdesk.model.Chamado;
 import my.chamados.helpdesk.model.Prioridade;
 import my.chamados.helpdesk.model.Usuario;
+import my.chamados.helpdesk.repository.UsuarioRepository;
 import my.chamados.helpdesk.service.ChamadoService;
 import my.chamados.helpdesk.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +18,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@SessionAttributes("usuarioLogado")
 public class FilaViewController {
 
     @Autowired
@@ -25,12 +26,16 @@ public class FilaViewController {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    private Usuario getUsuarioFromUserDetails(UserDetails userDetails) {
+        return usuarioRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+    }
+
     @GetMapping("/painel-fila")
-    public String exibirFila(Model model, HttpSession session) {
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
-        if (usuarioLogado == null) {
-            return "redirect:/login";
-        }
+    public String exibirFila(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        Usuario usuarioLogado = getUsuarioFromUserDetails(userDetails);
         model.addAttribute("usuarioLogado", usuarioLogado);
 
         switch (usuarioLogado.getPerfil()) {
@@ -66,7 +71,8 @@ public class FilaViewController {
     }
 
     @PostMapping("/painel-fila/assumir")
-    public String assumirChamadoTela(@RequestParam Long chamadoId, @ModelAttribute("usuarioLogado") Usuario tecnico) {
+    public String assumirChamadoTela(@RequestParam Long chamadoId, @AuthenticationPrincipal UserDetails userDetails) {
+        Usuario tecnico = getUsuarioFromUserDetails(userDetails);
         try {
             chamadoService.assumirChamado(chamadoId, tecnico.getId());
         } catch (Exception e) {
@@ -80,7 +86,8 @@ public class FilaViewController {
                                    @RequestParam String descricao,
                                    @RequestParam Categoria categoria,
                                    @RequestParam Prioridade prioridade,
-                                   @ModelAttribute("usuarioLogado") Usuario cliente) {
+                                   @AuthenticationPrincipal UserDetails userDetails) {
+        Usuario cliente = getUsuarioFromUserDetails(userDetails);
         try {
             Chamado chamado = new Chamado();
             chamado.setTitulo(titulo);
@@ -114,9 +121,9 @@ public class FilaViewController {
     }
 
     @PostMapping("/painel-fila/excluir-usuario")
-    public String excluirUsuario(@RequestParam Long usuarioId, HttpSession session) {
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
-        if (usuarioLogado != null && usuarioLogado.getPerfil() == Usuario.Perfil.ADMIN) {
+    public String excluirUsuario(@RequestParam Long usuarioId, @AuthenticationPrincipal UserDetails userDetails) {
+        Usuario usuarioLogado = getUsuarioFromUserDetails(userDetails);
+        if (usuarioLogado.getPerfil() == Usuario.Perfil.ADMIN) {
             if (!usuarioLogado.getId().equals(usuarioId)) {
                 try {
                     usuarioService.deletarUsuario(usuarioId);
@@ -145,8 +152,9 @@ public class FilaViewController {
     public String adicionarComentarioTela(@PathVariable Long id,
                                           @RequestParam String texto,
                                           @RequestParam(required = false) boolean resolver,
-                                          @ModelAttribute("usuarioLogado") Usuario usuario,
+                                          @AuthenticationPrincipal UserDetails userDetails,
                                           RedirectAttributes redirectAttributes) {
+        Usuario usuario = getUsuarioFromUserDetails(userDetails);
         try {
             if (resolver) {
                 chamadoService.resolverChamado(id, texto);

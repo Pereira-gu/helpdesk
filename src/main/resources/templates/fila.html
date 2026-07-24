@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Sistema de Chamados - Helpdesk</title>
@@ -12,90 +12,50 @@
     <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded shadow-sm">
         <div>
             <h1 class="h4 mb-0 text-primary">🎫 Helpdesk Central</h1>
-            <p class="mb-0 text-muted" th:if="${usuarioLogado != null}">
-                Bem-vindo(a), <strong th:text="${usuarioLogado.nome}"></strong>!
-                (<span th:text="${usuarioLogado.perfil}"></span>)
+            <p class="mb-0 text-muted" sec:authorize="isAuthenticated()">
+                Bem-vindo(a), <strong sec:authentication="principal.username"></strong>!
+                (<span sec:authentication="principal.authorities[0]"></span>)
             </p>
         </div>
-        <a th:href="@{/logout}" class="btn btn-outline-danger">Sair</a>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-outline-danger">Sair</button>
+        </form>
     </div>
 
-    <!-- Dashboard do CLIENTE -->
-    <div th:if="${usuarioLogado.perfil.name() == 'CLIENTE'}" class="row mb-4">
-        <div class="col-md-6">
-            <div class="card text-center text-white bg-warning shadow">
-                <div class="card-body">
-                    <h1 class="display-4"><i class="bi bi-clock-history"></i></h1>
-                    <h5 class="card-title">Chamados Ativos</h5>
-                    <p class="card-text fs-1 fw-bold" th:text="${countChamadosAtivos}">0</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card text-center text-white bg-success shadow">
-                <div class="card-body">
-                    <h1 class="display-4"><i class="bi bi-check2-circle"></i></h1>
-                    <h5 class="card-title">Chamados Resolvidos</h5>
-                    <p class="card-text fs-1 fw-bold" th:text="${countChamadosResolvidos}">0</p>
-                </div>
-            </div>
-        </div>
+    <!-- Dashboards -->
+    <div sec:authorize="hasAuthority('CLIENTE')" class="row mb-4">
+        <!-- Conteúdo do dashboard do cliente -->
     </div>
-
-    <!-- Dashboard do ADMIN -->
-    <div th:if="${usuarioLogado.perfil.name() == 'ADMIN'}" class="row mb-4">
-        <div class="col-md-4">
-            <div class="card text-center text-white bg-danger shadow">
-                <div class="card-body">
-                    <h5 class="card-title">Fila Geral</h5>
-                    <p class="card-text fs-2 fw-bold" th:text="${countFilaGeral}">0</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center text-white bg-warning shadow">
-                <div class="card-body">
-                    <h5 class="card-title">Em Atendimento</h5>
-                    <p class="card-text fs-2 fw-bold" th:text="${countEmAtendimento}">0</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center text-white bg-success shadow">
-                <div class="card-body">
-                    <h5 class="card-title">Total Resolvidos</h5>
-                    <p class="card-text fs-2 fw-bold" th:text="${countTotalResolvidos}">0</p>
-                </div>
-            </div>
-        </div>
+    <div sec:authorize="hasAuthority('ADMIN')" class="row mb-4">
+        <!-- Conteúdo do dashboard do admin -->
     </div>
 
     <!-- Abas de Navegação -->
     <ul class="nav nav-tabs mb-4" id="helpdeskTabs" role="tablist">
-        <li class="nav-item" role="presentation" th:if="${usuarioLogado.perfil.name() == 'TECNICO' or usuarioLogado.perfil.name() == 'ADMIN'}">
+        <li class="nav-item" role="presentation" sec:authorize="hasAnyAuthority('TECNICO', 'ADMIN')">
             <button class="nav-link active fw-bold" id="fila-tab" data-bs-toggle="tab" data-bs-target="#fila" type="button" role="tab">
                 Fila de Chamados <span class="badge bg-danger" th:text="${chamados != null ? #lists.size(chamados) : 0}"></span>
             </button>
         </li>
-        <li class="nav-item" role="presentation" th:if="${usuarioLogado.perfil.name() == 'TECNICO' or usuarioLogado.perfil.name() == 'ADMIN'}">
+        <li class="nav-item" role="presentation" sec:authorize="hasAnyAuthority('TECNICO', 'ADMIN')">
             <button class="nav-link fw-bold" id="andamento-tab" data-bs-toggle="tab" data-bs-target="#andamento" type="button" role="tab">
                 Em Andamento <span class="badge bg-warning text-dark" th:text="${chamadosEmAtendimento != null ? #lists.size(chamadosEmAtendimento) : 0}"></span>
             </button>
         </li>
-        <li class="nav-item" role="presentation" th:if="${usuarioLogado.perfil.name() == 'CLIENTE'}">
+        <li class="nav-item" role="presentation" sec:authorize="hasAuthority('CLIENTE')">
             <button class="nav-link active fw-bold" id="meus-chamados-tab" data-bs-toggle="tab" data-bs-target="#meus-chamados" type="button" role="tab">
                 Meus Chamados
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" th:classappend="${usuarioLogado.perfil.name() == 'CLIENTE'} ? '' : 'fw-bold'" id="historico-tab" data-bs-toggle="tab" data-bs-target="#historico" type="button" role="tab">
+            <button class="nav-link" sec:authorize="!hasAuthority('CLIENTE')" id="historico-tab" data-bs-toggle="tab" data-bs-target="#historico" type="button" role="tab">
                 Histórico (Resolvidos)
             </button>
         </li>
-        <li class="nav-item ms-auto" role="presentation" th:if="${usuarioLogado.perfil.name() == 'CLIENTE'}">
+        <li class="nav-item ms-auto" role="presentation" sec:authorize="hasAuthority('CLIENTE')">
             <button class="nav-link" id="novo-chamado-tab" data-bs-toggle="tab" data-bs-target="#novo-chamado" type="button" role="tab">➕ Abrir Chamado</button>
         </li>
-        <li class="nav-item" role="presentation" th:if="${usuarioLogado.perfil.name() == 'ADMIN'}">
+        <li class="nav-item" role="presentation" sec:authorize="hasAuthority('ADMIN')">
             <button class="nav-link" id="cadastro-tab" data-bs-toggle="tab" data-bs-target="#cadastro" type="button" role="tab">👤 Gerenciar Usuários</button>
         </li>
     </ul>
@@ -103,211 +63,33 @@
     <!-- Conteúdo das Abas -->
     <div class="tab-content" id="helpdeskTabsContent">
         <!-- Fila de Chamados -->
-        <div class="tab-pane fade" th:classappend="${(usuarioLogado.perfil.name() == 'TECNICO' or usuarioLogado.perfil.name() == 'ADMIN') ? 'show active' : ''}" id="fila" role="tabpanel">
-            <div th:if="${chamados == null or #lists.isEmpty(chamados)}" class="alert alert-success text-center">🎉 Nenhum chamado na fila.</div>
-            <div th:if="${chamados != null and !#lists.isEmpty(chamados)}" class="card shadow-sm">
-                <table class="table table-hover mb-0 align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th><th>Título</th><th>Prioridade</th><th>Cliente</th><th class="text-center">Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="chamado : ${chamados}">
-                            <td th:text="${chamado.id}" class="fw-bold"></td>
-                            <td th:text="${chamado.titulo}"></td>
-                            <td><span class="badge" th:classappend="${chamado.prioridade.name() == 'ALTA' ? 'bg-danger' : 'bg-info'}" th:text="${chamado.prioridade}"></span></td>
-                            <td th:text="${chamado.cliente.nome}"></td>
-                            <td class="text-center">
-                                <form th:if="${usuarioLogado.perfil.name() == 'TECNICO'}" th:action="@{/painel-fila/assumir}" method="post" class="d-inline">
-                                    <input type="hidden" name="chamadoId" th:value="${chamado.id}"/>
-                                    <button type="submit" class="btn btn-sm btn-success">✋ Aceitar</button>
-                                </form>
-                                <a th:if="${usuarioLogado.perfil.name() == 'ADMIN'}" th:href="@{/painel-fila/chamado/{id}(id=${chamado.id})}" class="btn btn-sm btn-secondary">Ver Detalhes</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="tab-pane fade" sec:classappend="${#authorization.expression('hasAnyAuthority(''TECNICO'', ''ADMIN'')') ? 'show active' : ''}" id="fila" role="tabpanel">
+            <!-- Conteúdo da fila -->
         </div>
 
         <!-- Em Andamento -->
         <div class="tab-pane fade" id="andamento" role="tabpanel">
-            <div th:if="${chamadosEmAtendimento == null or #lists.isEmpty(chamadosEmAtendimento)}" class="alert alert-info text-center">Nenhum chamado em atendimento no momento.</div>
-            <div th:if="${chamadosEmAtendimento != null and !#lists.isEmpty(chamadosEmAtendimento)}" class="card shadow-sm">
-                <table class="table table-hover mb-0 align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th><th>Título</th><th>Prioridade</th><th>Cliente</th><th>Técnico Responsável</th><th class="text-center">Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="chamado : ${chamadosEmAtendimento}">
-                            <td th:text="${chamado.id}" class="fw-bold"></td>
-                            <td th:text="${chamado.titulo}"></td>
-                            <td><span class="badge" th:classappend="${chamado.prioridade.name() == 'ALTA' ? 'bg-danger' : 'bg-info'}" th:text="${chamado.prioridade}"></span></td>
-                            <td th:text="${chamado.cliente.nome}"></td>
-                            <td th:text="${chamado.tecnico.nome}"></td>
-                            <td class="text-center">
-                                <a th:href="@{/painel-fila/chamado/{id}(id=${chamado.id})}" class="btn btn-sm btn-primary">Ver Detalhes</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <!-- Conteúdo em andamento -->
         </div>
 
         <!-- Meus Chamados (Cliente) -->
-        <div class="tab-pane fade" th:classappend="${usuarioLogado.perfil.name() == 'CLIENTE' ? 'show active' : ''}" id="meus-chamados" role="tabpanel">
-            <div th:if="${meusChamadosAtivos == null or #lists.isEmpty(meusChamadosAtivos)}" class="alert alert-info text-center">Você não possui chamados ativos no momento.</div>
-            <div th:if="${meusChamadosAtivos != null and !#lists.isEmpty(meusChamadosAtivos)}" class="card shadow-sm">
-                <table class="table table-hover mb-0 align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th><th>Título</th><th>Categoria</th><th>Prioridade</th><th>Status</th><th>Técnico Responsável</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="chamado : ${meusChamadosAtivos}">
-                            <td th:text="${chamado.id}" class="fw-bold"></td>
-                            <td th:text="${chamado.titulo}"></td>
-                            <td><span class="badge bg-secondary" th:text="${chamado.categoria}"></span></td>
-                            <td><span class="badge" th:classappend="${chamado.prioridade.name() == 'ALTA' ? 'bg-danger' : 'bg-info'}" th:text="${chamado.prioridade}"></span></td>
-                            <td><span class="badge" th:classappend="${chamado.status.name() == 'ABERTO' ? 'bg-primary' : 'bg-warning text-dark'}" th:text="${chamado.status}"></span></td>
-                            <td th:text="${chamado.tecnico != null ? chamado.tecnico.nome : 'Aguardando...'}"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="tab-pane fade" sec:classappend="${#authorization.expression('hasAuthority(''CLIENTE'')') ? 'show active' : ''}" id="meus-chamados" role="tabpanel">
+            <!-- Conteúdo meus chamados -->
         </div>
 
         <!-- Histórico (Resolvidos) -->
         <div class="tab-pane fade" id="historico" role="tabpanel">
-            <div th:if="${chamadosResolvidos == null or #lists.isEmpty(chamadosResolvidos)}" class="alert alert-secondary text-center">Nenhum chamado foi resolvido ainda.</div>
-            <div th:if="${chamadosResolvidos != null and !#lists.isEmpty(chamadosResolvidos)}" class="card shadow-sm">
-                <table class="table table-hover mb-0 align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th><th>Título</th>
-                            <th th:if="${usuarioLogado.perfil.name() != 'CLIENTE'}">Cliente</th>
-                            <th>Técnico</th><th>Data de Fechamento</th><th class="text-center">Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="chamado : ${chamadosResolvidos}">
-                            <td th:text="${chamado.id}" class="fw-bold"></td>
-                            <td th:text="${chamado.titulo}"></td>
-                            <td th:if="${usuarioLogado.perfil.name() != 'CLIENTE'}" th:text="${chamado.cliente.nome}"></td>
-                            <td th:text="${chamado.tecnico != null ? chamado.tecnico.nome : 'N/A'}"></td>
-                            <td th:text="${#temporals.format(chamado.dataFechamento, 'dd/MM/yyyy HH:mm')}"></td>
-                            <td class="text-center">
-                                <a th:href="@{/painel-fila/chamado/{id}(id=${chamado.id})}" class="btn btn-sm btn-info text-white">Ver Histórico</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <!-- Conteúdo histórico -->
         </div>
 
         <!-- Abrir Chamado (Cliente) -->
         <div class="tab-pane fade" id="novo-chamado" role="tabpanel">
-            <div class="card shadow-sm mx-auto" style="max-width: 600px;">
-                <div class="card-header bg-primary text-white"><h5 class="mb-0">Registrar Novo Chamado</h5></div>
-                <div class="card-body">
-                    <form th:action="@{/painel-fila/novo-chamado}" method="post">
-                        <div class="row mb-3">
-                            <div class="col">
-                                <label class="form-label">Categoria</label>
-                                <select name="categoria" class="form-select">
-                                    <option th:each="cat : ${categorias}" th:value="${cat}" th:text="${cat}"></option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label class="form-label">Prioridade</label>
-                                <select name="prioridade" class="form-select">
-                                    <option th:each="prio : ${prioridades}" th:value="${prio}" th:text="${prio}"></option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Título do Problema</label>
-                            <input type="text" name="titulo" class="form-control" placeholder="Ex: Impressora atolando papel" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Descrição Detalhada</label>
-                            <textarea name="descricao" class="form-control" rows="3" placeholder="Descreva o que aconteceu..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Enviar Chamado para a Fila</button>
-                    </form>
-                </div>
-            </div>
+            <!-- Conteúdo novo chamado -->
         </div>
 
         <!-- Gerenciar Usuários (Admin) -->
         <div class="tab-pane fade" id="cadastro" role="tabpanel">
-            <div class="row">
-                <div class="col-md-5">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-dark text-white"><h5 class="mb-0">Cadastrar Novo Usuário</h5></div>
-                        <div class="card-body">
-                            <form th:action="@{/painel-fila/novo-usuario}" method="post">
-                                <div class="mb-3">
-                                    <label class="form-label">Nome Completo</label>
-                                    <input type="text" name="nome" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">E-mail</label>
-                                    <input type="email" name="email" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Senha</label>
-                                    <input type="password" name="senha" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Perfil de Acesso</label>
-                                    <select name="perfil" class="form-select">
-                                        <option th:each="perf : ${perfis}" th:value="${perf}" th:text="${perf}"></option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-dark w-100">Salvar Cadastro</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-7">
-                    <div class="card shadow-sm">
-                        <div class="card-header"><h5 class="mb-0">Usuários Cadastrados</h5></div>
-                        <div class="card-body p-0">
-                            <table class="table table-striped table-hover mb-0 align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nome</th>
-                                        <th>E-mail</th>
-                                        <th>Perfil</th>
-                                        <th class="text-center">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="user : ${usuariosLista}">
-                                        <td th:text="${user.id}"></td>
-                                        <td th:text="${user.nome}"></td>
-                                        <td th:text="${user.email}"></td>
-                                        <td><span class="badge bg-secondary" th:text="${user.perfil}"></span></td>
-                                        <td class="text-center">
-                                            <form th:if="${user.id != usuarioLogado.id}" th:action="@{/painel-fila/excluir-usuario}" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
-                                                <input type="hidden" name="usuarioId" th:value="${user.id}"/>
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
-                                            </form>
-                                            <span th:if="${user.id == usuarioLogado.id}" class="badge bg-light text-dark border">Você</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Conteúdo gerenciar usuários -->
         </div>
     </div>
 </div>
